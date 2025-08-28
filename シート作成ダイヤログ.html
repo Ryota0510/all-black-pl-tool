@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    .container {
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    h3 {
+      color: #333;
+      margin-top: 0;
+    }
+    .button-group {
+      margin: 15px 0;
+    }
+    button {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    .primary {
+      background-color: #4285f4;
+      color: white;
+    }
+    .primary:hover {
+      background-color: #357ae8;
+    }
+    .secondary {
+      background-color: #34a853;
+      color: white;
+    }
+    .secondary:hover {
+      background-color: #2d9142;
+    }
+    .custom {
+      background-color: #fbbc04;
+      color: #333;
+    }
+    .custom:hover {
+      background-color: #f9ab00;
+    }
+    .custom-input {
+      margin: 15px 0;
+      padding: 15px;
+      background-color: #f8f9fa;
+      border-radius: 5px;
+      display: none;
+    }
+    .input-row {
+      display: flex;
+      gap: 10px;
+      margin: 10px 0;
+    }
+    input[type="number"] {
+      flex: 1;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 16px;
+    }
+    .create-btn {
+      background-color: #ea4335;
+      color: white;
+      padding: 8px 20px;
+    }
+    .create-btn:hover {
+      background-color: #d33b2c;
+    }
+    .loading {
+      display: none;
+      text-align: center;
+      margin: 20px 0;
+    }
+    .spinner {
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #4285f4;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h3>📅 マスターシート作成</h3>
+    <p>作成する月を選択してください：</p>
+    
+    <div class="button-group">
+      <button class="primary" onclick="createCurrentMonth()">
+        📊 今月のシートを作成
+      </button>
+      <button class="secondary" onclick="createNextMonth()">
+        📈 来月のシートを作成
+      </button>
+      <button class="custom" onclick="toggleCustomInput()">
+        🗓️ 月を指定して作成
+      </button>
+    </div>
+    
+    <div id="customInput" class="custom-input">
+      <p>年月を入力してください：</p>
+      <div class="input-row">
+        <input type="number" id="year" placeholder="2025" min="2020" max="2030">
+        <span style="padding: 8px;">年</span>
+        <input type="number" id="month" placeholder="8" min="1" max="12">
+        <span style="padding: 8px;">月</span>
+        <button class="create-btn" onclick="createCustomMonth()">作成</button>
+      </div>
+    </div>
+    
+    <div id="loading" class="loading">
+      <div class="spinner"></div>
+      <p>処理中...</p>
+    </div>
+  </div>
+  
+  <script>
+    // 現在の年月を設定
+    window.onload = function() {
+      var now = new Date();
+      document.getElementById('year').value = now.getFullYear();
+      document.getElementById('month').value = now.getMonth() + 1;
+    };
+    
+    function showLoading() {
+      document.getElementById('loading').style.display = 'block';
+    }
+    
+    function hideLoading() {
+      document.getElementById('loading').style.display = 'none';
+    }
+    
+    function createCurrentMonth() {
+      showLoading();
+      google.script.run
+        .withSuccessHandler(function() {
+          hideLoading();
+          google.script.host.close();
+        })
+        .withFailureHandler(function(error) {
+          hideLoading();
+          alert('エラー: ' + error.message);
+        })
+        .createCurrentMonthSheet();
+    }
+    
+    function createNextMonth() {
+      showLoading();
+      google.script.run
+        .withSuccessHandler(function() {
+          hideLoading();
+          google.script.host.close();
+        })
+        .withFailureHandler(function(error) {
+          hideLoading();
+          alert('エラー: ' + error.message);
+        })
+        .createNextMonthSheet();
+    }
+    
+    function toggleCustomInput() {
+      var customInput = document.getElementById('customInput');
+      customInput.style.display = customInput.style.display === 'none' ? 'block' : 'none';
+    }
+    
+    function createCustomMonth() {
+      var year = parseInt(document.getElementById('year').value);
+      var month = parseInt(document.getElementById('month').value);
+      
+      if (!year || !month || year < 2020 || year > 2030 || month < 1 || month > 12) {
+        alert('正しい年月を入力してください。');
+        return;
+      }
+      
+      showLoading();
+      google.script.run
+        .withSuccessHandler(function() {
+          hideLoading();
+          google.script.host.close();
+        })
+        .withFailureHandler(function(error) {
+          hideLoading();
+          alert('エラー: ' + error.message);
+        })
+        .createMasterSheetForMonth(year, month);
+    }
+  </script>
+</body>
+</html>

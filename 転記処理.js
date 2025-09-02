@@ -870,23 +870,27 @@ function findDateColumn(masterSheet, dateStr) {
     var lastCol = masterSheet.getLastColumn();
     console.log('マスターシートの最終列:', lastCol);
     
-    var headerRow = masterSheet.getRange(1, 1, 1, lastCol).getValues()[0];
-    console.log('1行目のデータ取得完了');
+    // C1(列3)からAG1(列33)までを検索範囲とする
+    var searchStartCol = 3; // C列
+    var searchEndCol = Math.min(33, lastCol); // AG列または最終列のいずれか小さい方
+    var headerRow = masterSheet.getRange(1, searchStartCol, 1, searchEndCol - searchStartCol + 1).getValues()[0];
+    console.log('1行目のデータ取得完了（C1～AG1の範囲）');
     
     console.log('各列をスキャン中...');
     for (var i = 0; i < headerRow.length; i++) {
       var cellValue = headerRow[i];
       var cellType = typeof cellValue;
+      var actualColumn = i + searchStartCol; // 実際の列番号を計算
       
       // 詳細ログ（最初の20列まで）
       if (i < 20) {
         if (cellValue instanceof Date) {
-          console.log('  列' + (i+1) + ': ' + cellValue + ' (Dateオブジェクト)');
+          console.log('  列' + actualColumn + ': ' + cellValue + ' (Dateオブジェクト)');
         } else if (cellType === 'number') {
           var serialDate = new Date((cellValue - 25569) * 86400 * 1000);
-          console.log('  列' + (i+1) + ': ' + cellValue + ' (数値, 日付変換: ' + serialDate + ')');
+          console.log('  列' + actualColumn + ': ' + cellValue + ' (数値, 日付変換: ' + serialDate + ')');
         } else {
-          console.log('  列' + (i+1) + ': "' + cellValue + '" (' + cellType + ')');
+          console.log('  列' + actualColumn + ': "' + cellValue + '" (' + cellType + ')');
         }
       }
       
@@ -896,8 +900,8 @@ function findDateColumn(masterSheet, dateStr) {
         cellDate.setHours(0, 0, 0, 0);
         
         if (cellDate.getTime() === targetDate.getTime()) {
-          console.log('✓ 日付が一致（Dateオブジェクト）: 列' + (i + 1));
-          return i + 1;
+          console.log('✓ 日付が一致（Dateオブジェクト）: 列' + actualColumn);
+          return actualColumn;
         }
       } else if (typeof cellValue === 'number') {
         // Excelのシリアル値を日付に変換
@@ -907,8 +911,8 @@ function findDateColumn(masterSheet, dateStr) {
         if (serialDate.getFullYear() === targetDate.getFullYear() &&
             serialDate.getMonth() === targetDate.getMonth() &&
             serialDate.getDate() === targetDate.getDate()) {
-          console.log('✓ 日付が一致（シリアル値）: 列' + (i + 1));
-          return i + 1;
+          console.log('✓ 日付が一致（シリアル値）: 列' + actualColumn);
+          return actualColumn;
         }
       } else if (typeof cellValue === 'string' && cellValue) {
         try {
@@ -917,8 +921,8 @@ function findDateColumn(masterSheet, dateStr) {
           
           if (!isNaN(parsedDate.getTime()) &&
               parsedDate.getTime() === targetDate.getTime()) {
-            console.log('✓ 日付が一致（文字列）: 列' + (i + 1));
-            return i + 1;
+            console.log('✓ 日付が一致（文字列）: 列' + actualColumn);
+            return actualColumn;
           }
         } catch (e) {
           // 日付として解析できない場合は無視
@@ -1088,22 +1092,26 @@ function logDateHeaderStructure(masterSheet, targetDate) {
     console.log('検索対象日付:', targetDate);
     console.log('検索対象日付（Dateオブジェクト）:', new Date(targetDate));
     
-    var lastCol = Math.min(masterSheet.getLastColumn(), 20); // 最大20列まで
-    var headerRow = masterSheet.getRange(1, 1, 1, lastCol).getValues()[0];
+    // C1(列3)からAG1(列33)までの範囲で最大20列まで
+    var searchStartCol = 3; // C列
+    var lastCol = Math.min(masterSheet.getLastColumn(), 33); // AG列または最終列のいずれか小さい方
+    var searchEndCol = Math.min(searchStartCol + 19, lastCol); // 最大20列まで
+    var headerRow = masterSheet.getRange(1, searchStartCol, 1, searchEndCol - searchStartCol + 1).getValues()[0];
     
-    console.log('1行目の内容（最初の20列）:');
+    console.log('1行目の内容（C列から最大20列）:');
     for (var i = 0; i < headerRow.length; i++) {
       var cellValue = headerRow[i];
       var cellType = typeof cellValue;
+      var actualColumn = i + searchStartCol; // 実際の列番号を計算
       
       if (cellValue instanceof Date) {
-        console.log('  列' + (i+1) + ': ' + cellValue + ' (Dateオブジェクト)');
+        console.log('  列' + actualColumn + ': ' + cellValue + ' (Dateオブジェクト)');
       } else if (cellType === 'number') {
         // シリアル値の可能性
         var serialDate = new Date((cellValue - 25569) * 86400 * 1000);
-        console.log('  列' + (i+1) + ': ' + cellValue + ' (数値, 日付変換: ' + serialDate + ')');
+        console.log('  列' + actualColumn + ': ' + cellValue + ' (数値, 日付変換: ' + serialDate + ')');
       } else {
-        console.log('  列' + (i+1) + ': "' + cellValue + '" (' + cellType + ')');
+        console.log('  列' + actualColumn + ': "' + cellValue + '" (' + cellType + ')');
       }
     }
     

@@ -262,8 +262,8 @@ function extractDateFromLine(line) {
     return fullMatch[0];
   }
   
-  // 月日形式（現在年を使用）
-  var mdMatch = line.match(/(\d{1,2})月(\d{1,2})日?/);
+  // 月日形式（現在年を使用）- スペースも考慮
+  var mdMatch = line.match(/(\d{1,2})月\s*(\d{1,2})日?/);
   if (mdMatch) {
     var year = new Date().getFullYear();
     var month = mdMatch[1].padStart(2, '0');
